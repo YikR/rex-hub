@@ -1,6 +1,6 @@
 {
   "name": "rex-hub",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "private": true,
   "type": "module",
   "description": "Rex \u591a\u6e90\u805a\u5408 Widget\uff1a\u628a\u591a\u4e2a\u81ea\u90e8\u7f72/\u516c\u5f00\u5a92\u4f53\u6765\u6e90\u6574\u5408\u4e3a\u4e00\u4e2a\u53ef\u914d\u7f6e\u6a21\u5757",
@@ -25,7 +25,7 @@
     "smoke": "node scripts/smoke.mjs",
     "check": "tsc --noEmit",
     "encrypt": "node scripts/encrypt.mjs",
-    "encrypt:check": "node scripts/encrypt.mjs --check"
+    "encrypt:check": "node scripts/encrypt.mjs --check && node scripts/encrypt.mjs --check --out dist/probe.rex.js"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

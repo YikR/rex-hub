@@ -1107,11 +1107,11 @@ function toSubtitleItems(entries) {
  *
  * 构建产物里导出声明会被 `@rexnow/rslib-plugin` 移除，顶层函数因此成为宿主可解析的全局函数。
  */ WidgetMetadata = {
-    id: "rex-hub",
+    id: "yikr.rex-hub",
     title: "Rex Hub 多源聚合",
     description: "把公共影库、公开频道与自部署媒体来源合并成一个可切换、可配置的模块。",
     author: "YikR",
-    version: "0.2.2",
+    version: "0.2.3",
     requiredVersion: "0.0.2",
     icon: "https://raw.githubusercontent.com/YikR/rex-hub/main/assets/icon.png",
     globalParams: [

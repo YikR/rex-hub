@@ -34,7 +34,7 @@ runInContext(source, createContext(sandbox), { filename: "dist/index.js" });
 
 const failures = [];
 const metadata = sandbox.WidgetMetadata;
-if (!metadata || metadata.id !== "rex-hub") {
+if (!metadata || metadata.id !== "yikr.rex-hub") {
   failures.push("WidgetMetadata 未注册或 id 不正确");
 } else {
   if (!Array.isArray(metadata.modules) || metadata.modules.length !== 4) {

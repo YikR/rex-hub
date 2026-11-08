@@ -20,6 +20,21 @@ export default tseslint.config(
   },
   ...tseslint.configs.recommended,
   {
+    // 探针是宿主直接求值的脚本：WidgetMetadata / 函数名是宿主注入的全局与入口
+    files: ["probe/**/*.js"],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        WidgetMetadata: "writable",
+        Widget: "readonly",
+      },
+    },
+    rules: {
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+    },
+  },
+  {
     files: ["src/**/*.ts", "test/**/*.ts"],
     languageOptions: {
       globals: {

@@ -13,16 +13,27 @@
  * 本仓库源码是公开的，所以这是可接受的；如果你在其中放了私有逻辑，请先自行权衡。
  *
  * 用法：
- *   node scripts/encrypt.mjs           # 加密 dist/index.js → dist/index.rex.js
- *   node scripts/encrypt.mjs --check   # 只校验已有的 dist/index.rex.js（离线，不发网络请求）
+ *   node scripts/encrypt.mjs                       # 加密 dist/index.js → dist/index.rex.js
+ *   node scripts/encrypt.mjs --check               # 只校验 dist/index.rex.js（离线）
+ *   node scripts/encrypt.mjs --in a.js --out b.js  # 加密任意文件（诊断/探针用）
+ *   node scripts/encrypt.mjs --check --out b.js    # 校验任意产物（离线）
  */
 import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const SOURCE_PATH = join(ROOT, "dist/index.js");
-const OUTPUT_PATH = join(ROOT, "dist/index.rex.js");
+const argv = process.argv.slice(2);
+const argValue = flag => {
+  const index = argv.indexOf(flag);
+  return index >= 0 ? argv[index + 1] : undefined;
+};
+const resolvePath = value => (value ? join(ROOT, value) : undefined);
+
+const SOURCE_PATH =
+  resolvePath(argValue("--in")) ?? join(ROOT, "dist/index.js");
+const OUTPUT_PATH =
+  resolvePath(argValue("--out")) ?? join(ROOT, "dist/index.rex.js");
 const ENDPOINT = "https://api.rexnow.tv/api/widgets/encrypt";
 const MAX_BYTES = 2 * 1024 * 1024;
 const TIMEOUT_MS = 150_000;
@@ -53,8 +64,9 @@ export function validateEnvelope(text) {
 async function check() {
   const text = await readFile(OUTPUT_PATH, "utf8");
   const { payloadBytes } = validateEnvelope(text);
+  const name = OUTPUT_PATH.split("/").pop();
   console.log(
-    `✓ dist/index.rex.js 封装有效（密文 ${(payloadBytes / 1024).toFixed(1)} KiB，共 ${(text.length / 1024).toFixed(1)} KiB）`
+    `✓ ${name} 封装有效（密文 ${(payloadBytes / 1024).toFixed(1)} KiB，共 ${(text.length / 1024).toFixed(1)} KiB）`
   );
 }
 
@@ -88,11 +100,11 @@ async function encrypt() {
   const { payloadBytes } = validateEnvelope(output);
   await writeFile(OUTPUT_PATH, output, "utf8");
   console.log(
-    `✓ 已生成 dist/index.rex.js（源码 ${(bytes / 1024).toFixed(1)} KiB → 密文 ${(payloadBytes / 1024).toFixed(1)} KiB）`
+    `✓ 已生成 ${OUTPUT_PATH.split("/").pop()}（源码 ${(bytes / 1024).toFixed(1)} KiB → 密文 ${(payloadBytes / 1024).toFixed(1)} KiB）`
   );
 }
 
-if (process.argv.includes("--check")) {
+if (argv.includes("--check")) {
   await check();
 } else {
   await encrypt();

@@ -1,4 +1,5 @@
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { HUB_ID } from "../src/metadata";
 
 const M3U = `#EXTM3U
 #EXTINF:-1 tvg-logo="https://img.example.com/1.png" group-title="央视",CCTV-1
@@ -61,7 +62,7 @@ describe("WidgetMetadata 注册", () => {
     const metadata = (
       globalThis as unknown as { WidgetMetadata: WidgetMetadata }
     ).WidgetMetadata;
-    expect(metadata.id).toBe("rex-hub");
+    expect(metadata.id).toBe(HUB_ID);
     expect(metadata.modules).toHaveLength(4);
     expect(metadata.modules.map(entry => entry.functionName)).toEqual([
       "hubList",

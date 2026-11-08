@@ -1,5 +1,5 @@
 /// <reference types='@rexnow/libs/env' />
-declare namespace RexHub {
+declare namespace YikrRexHub {
     interface GlobalParams {
         /**
          * 来源类型
@@ -63,7 +63,7 @@ declare namespace RexHub {
 
 //#region hub-list
 /** Params of 浏览来源 */
-interface HubListParams extends RexHub.GlobalParams {
+interface HubListParams extends YikrRexHub.GlobalParams {
 }
 
 /** Return Type of 浏览来源 */
@@ -79,7 +79,7 @@ declare let hubList: (params: HubListParams) => HubListReturnType | null | Promi
 
 //#region hub-search
 /** Params of 搜索 */
-interface HubSearchParams extends RexHub.GlobalParams {
+interface HubSearchParams extends YikrRexHub.GlobalParams {
     /** 关键词 */
     keyword: string;
 }
@@ -97,7 +97,7 @@ declare let hubSearch: (params: HubSearchParams) => HubSearchReturnType | null |
 
 //#region loadResource
 /** Params of 获取播放地址 */
-interface LoadResourceParams extends RexHub.GlobalParams, BaseParams {
+interface LoadResourceParams extends YikrRexHub.GlobalParams, BaseParams {
 }
 
 /** Return Type of 获取播放地址 */
@@ -113,7 +113,7 @@ declare let loadResource: (params: LoadResourceParams) => LoadResourceReturnType
 
 //#region loadSubtitle
 /** Params of 获取字幕 */
-interface LoadSubtitleParams extends RexHub.GlobalParams, BaseParams {
+interface LoadSubtitleParams extends YikrRexHub.GlobalParams, BaseParams {
 }
 
 /** Return Type of 获取字幕 */

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { parse } from "acorn";
 import { describe, expect, it } from "vitest";
-import { buildMetadata, HUB_ICON, HUB_VERSION } from "../src/metadata";
+import { buildMetadata, HUB_ICON, HUB_ID, HUB_VERSION } from "../src/metadata";
 
 /**
  * 这组用例复刻 Rex 客户端的**静态解析**行为：
@@ -137,7 +137,7 @@ describe("集合清单 rex-hub.rex", () => {
     expect(widget.url).toBe(
       "https://raw.githubusercontent.com/YikR/rex-hub/main/dist/index.rex.js"
     );
-    expect(widget.id).toBe("rex-hub");
+    expect(widget.id).toBe(HUB_ID);
     expect(widget.requiredVersion).toBe("0.0.2");
   });
 
@@ -156,6 +156,25 @@ describe("集合清单 rex-hub.rex", () => {
     expect(
       Buffer.from((lines[2] as string).trim(), "base64").length
     ).toBeGreaterThan(16);
+  });
+
+  it("探针产物也是合法封装", () => {
+    const encrypted = readFileSync(
+      new URL("../dist/probe.rex.js", import.meta.url),
+      "utf8"
+    );
+    const lines = encrypted.split("\n");
+    expect(lines).toHaveLength(3);
+    expect(lines[0]).toBe("REXENC");
+  });
+
+  it("探针源码也满足顶层字面量约定", () => {
+    const probe = readFileSync(
+      new URL("../probe/probe.js", import.meta.url),
+      "utf8"
+    );
+    expect(probe.match(/WidgetMetadata\s*=/g)).toHaveLength(1);
+    expect(probe).toContain('id: "yikr.rex-hub-probe"');
   });
 
   it("版本与包版本一致", () => {
