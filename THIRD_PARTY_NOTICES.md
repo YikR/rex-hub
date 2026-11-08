@@ -34,6 +34,15 @@
 [`catalog/sources.json`](../catalog/sources.json) 与 [docs/candidates.md](../docs/candidates.md) 中，
 本仓库不包含其中任何一行代码、图标或配置。筛选结论与依据见 [docs/candidates.md](../docs/candidates.md)。
 
+## 数据来源（不是代码）
+
+| 来源                                              | 用途                              | 说明                                                                                                                                          |
+| ------------------------------------------------- | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Internet Archive](https://archive.org)           | `source=archive` 的检索与文件清单 | 通过官方公开 API（`advancedsearch.php`、`metadata/`、`download/`）访问；条目的授权状态由 archive.org 标注，模块只做展示与直链跳转，不代理内容 |
+| [iptv-org/iptv](https://github.com/iptv-org/iptv) | `preset=iptv-*` 的公开频道索引    | 索引里的流地址由各频道方公开提供；是否可播放与观看权归频道方，模块不转码、不缓存媒体                                                          |
+
+这两者都不提供代码，因此不涉及再分发授权；使用它们时请遵守其站点条款。
+
 ## 协议与规范的归属
 
 - `rex-hub/1` JSON 目录协议由本仓库定义并维护（见 [docs/json-feed.md](../docs/json-feed.md)）。

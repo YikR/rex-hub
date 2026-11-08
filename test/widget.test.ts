@@ -167,6 +167,60 @@ describe("loadResource", () => {
   });
 });
 
+describe("archive 来源（默认免配置）", () => {
+  const stubArchive = () =>
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: unknown) => {
+        const url = String(input);
+        if (url.includes("/advancedsearch.php")) {
+          return new Response(
+            JSON.stringify({
+              response: {
+                docs: [
+                  {
+                    identifier: "demo-film",
+                    title: "公共领域影片",
+                    year: 1954,
+                  },
+                ],
+              },
+            }),
+            { status: 200, headers: { "content-type": "application/json" } }
+          );
+        }
+        return new Response(
+          JSON.stringify({
+            files: [{ name: "demo-film.mp4", format: "h.264" }],
+          }),
+          { status: 200, headers: { "content-type": "application/json" } }
+        );
+      })
+    );
+
+  it("不填任何配置也能列出条目", async () => {
+    stubArchive();
+    const items = await mod.hubList({ cacheTtl: "0", limit: "5" });
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({
+      title: "公共领域影片",
+      mediaType: "movie",
+      genreTitle: "公共领域",
+      videoUrl: "https://archive.org/download/demo-film/demo-film.mp4",
+    });
+  });
+
+  it("检索条件与关键词都能透传", async () => {
+    stubArchive();
+    const items = await mod.hubSearch({
+      keyword: "Chaplin",
+      cacheTtl: "0",
+      query: "collection:(silent_films)",
+    });
+    expect(items).toHaveLength(1);
+  });
+});
+
 describe("loadSubtitle", () => {
   it("从 JSON 目录读取字幕", async () => {
     const items = await mod.loadSubtitle({

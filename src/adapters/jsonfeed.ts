@@ -170,6 +170,7 @@ export const feedAdapter: HubAdapter = {
   id: "feed",
   title: "JSON 目录",
   description: "读取自部署服务按 rex-hub/1 协议输出的目录",
+  requiresEndpoint: true,
   async list(endpoint, ctx: AdapterContext) {
     const payload = await fetchJson(endpoint, ctx.limits, ctx.headers);
     return parseFeed(payload).slice(0, ctx.limit);

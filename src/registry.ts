@@ -1,3 +1,4 @@
+import { archiveAdapter } from "./adapters/archive";
 import { feedAdapter } from "./adapters/jsonfeed";
 import { playlistAdapter } from "./adapters/playlist";
 import type { HubAdapter } from "./adapters/types";
@@ -9,9 +10,13 @@ import { HubError } from "./errors";
  * 新增来源只需要实现 {@link HubAdapter} 并在此登记；元数据、参数校验、合并逻辑
  * 与测试用例都从这里派生，不需要改动入口函数。
  */
-export const ADAPTERS: readonly HubAdapter[] = [playlistAdapter, feedAdapter];
+export const ADAPTERS: readonly HubAdapter[] = [
+  archiveAdapter,
+  playlistAdapter,
+  feedAdapter,
+];
 
-export const DEFAULT_SOURCE = playlistAdapter.id;
+export const DEFAULT_SOURCE = "archive";
 
 export function getAdapter(id: string): HubAdapter {
   const adapter = ADAPTERS.find(candidate => candidate.id === id);

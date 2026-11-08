@@ -3,15 +3,32 @@ declare namespace RexHub {
     interface GlobalParams {
         /**
          * 来源类型
-         * @description playlist：M3U 列表；feed：rex-hub/1 JSON 目录
-         * @default 'playlist'
+         * @description archive：Internet Archive 公共影库（免配置）；playlist：M3U 列表；feed：rex-hub/1 JSON 目录
+         * @default 'archive'
          */
-        source: 'playlist' | 'feed';
+        source: 'archive' | 'playlist' | 'feed';
+        /**
+         * 内置预设
+         * @description 一键填入公开频道列表，可与下方地址叠加
+         * @default 'custom'
+         */
+        preset: 'custom' | 'iptv-cn' | 'iptv-hk' | 'iptv-tw' | 'iptv-jp' | 'iptv-us' | 'iptv-uk' | 'iptv-asia';
         /**
          * 来源地址
-         * @description 一行一个地址，支持「名称=地址」；最多 8 个，会合并去重
+         * @description 一行一个地址，支持「名称=地址」；最多 8 个，会合并去重。archive 留空即用内置检索
          */
         endpoint: string;
+        /**
+         * 检索条件
+         * @description 仅 archive：附加检索式，例如 collection:(sci-fi_horror) 或 year:1954
+         */
+        query: string;
+        /**
+         * 页码
+         * @description 仅 archive：从 1 开始的页码
+         * @default '1'
+         */
+        page: string;
         /**
          * 结果上限
          * @description 合并后的条目数上限
@@ -24,6 +41,12 @@ declare namespace RexHub {
          * @default '8000'
          */
         timeout: string;
+        /**
+         * 缓存（秒）
+         * @description 上游响应的本地缓存时长，0 表示关闭
+         * @default '600'
+         */
+        cacheTtl: string;
         /**
          * 允许私有网段
          * @description 自部署服务在局域网时保持 true

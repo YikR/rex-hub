@@ -1,8 +1,9 @@
 import { DEFAULTS } from "./config";
+import { DEFAULT_PRESET, presetOptions } from "./presets";
 import { DEFAULT_SOURCE, sourceOptions } from "./registry";
 
 /** 与 package.json 的 version 保持一致（有单测守护）。 */
-export const HUB_VERSION = "0.1.0";
+export const HUB_VERSION = "0.2.0";
 export const HUB_ID = "rex-hub";
 
 /**
@@ -13,26 +14,52 @@ export function buildMetadata(): WidgetMetadata {
   return {
     id: HUB_ID,
     title: "Rex Hub 多源聚合",
-    description: "把多个自部署或公开的媒体来源合并成一个可切换、可配置的模块。",
+    description:
+      "把公共影库、公开频道与自部署媒体来源合并成一个可切换、可配置的模块。",
     author: "YikR",
     version: HUB_VERSION,
-    // 0.0.2 起支持 enumeration/count 参数与 stream 模块
+    // 0.0.2 起支持 enumeration/count/page 参数与 stream 模块
     requiredVersion: "0.0.2",
     globalParams: [
       {
         name: "source",
         title: "来源类型",
         type: "enumeration",
-        description: "playlist：M3U 列表；feed：rex-hub/1 JSON 目录",
+        description:
+          "archive：Internet Archive 公共影库（免配置）；playlist：M3U 列表；feed：rex-hub/1 JSON 目录",
         value: DEFAULT_SOURCE,
         enumOptions: sourceOptions(),
+      },
+      {
+        name: "preset",
+        title: "内置预设",
+        type: "enumeration",
+        description: "一键填入公开频道列表，可与下方地址叠加",
+        value: DEFAULT_PRESET,
+        enumOptions: presetOptions(),
       },
       {
         name: "endpoint",
         title: "来源地址",
         type: "input",
-        description: "一行一个地址，支持「名称=地址」；最多 8 个，会合并去重",
+        description:
+          "一行一个地址，支持「名称=地址」；最多 8 个，会合并去重。archive 留空即用内置检索",
         value: "",
+      },
+      {
+        name: "query",
+        title: "检索条件",
+        type: "input",
+        description:
+          "仅 archive：附加检索式，例如 collection:(sci-fi_horror) 或 year:1954",
+        value: "",
+      },
+      {
+        name: "page",
+        title: "页码",
+        type: "page",
+        description: "仅 archive：从 1 开始的页码",
+        value: "1",
       },
       {
         name: "limit",
@@ -47,6 +74,13 @@ export function buildMetadata(): WidgetMetadata {
         type: "count",
         description: "单个来源请求超时，1000–20000",
         value: String(DEFAULTS.timeoutMs),
+      },
+      {
+        name: "cacheTtl",
+        title: "缓存（秒）",
+        type: "count",
+        description: "上游响应的本地缓存时长，0 表示关闭",
+        value: String(DEFAULTS.cacheTtl),
       },
       {
         name: "allowPrivateHost",

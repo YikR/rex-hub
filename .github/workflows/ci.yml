@@ -34,6 +34,8 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
+      - name: Committed artifact is up to date
+        run: git diff --exit-code -- dist
       - name: Smoke test artifact
         run: npm run smoke
       - name: Audit runtime dependencies

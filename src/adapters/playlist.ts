@@ -92,6 +92,7 @@ export const playlistAdapter: HubAdapter = {
   id: "playlist",
   title: "M3U 播放列表",
   description: "解析 M3U/M3U8 频道或点播列表，支持多来源合并",
+  requiresEndpoint: true,
   async list(endpoint, ctx: AdapterContext) {
     const text = await fetchText(endpoint, ctx.limits, ctx.headers);
     return parseM3U(text).slice(0, ctx.limit).map(toItem);

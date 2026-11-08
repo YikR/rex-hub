@@ -23,6 +23,7 @@ const sandbox = {
   },
   // 宿主提供的 Web 标准内置对象（Rex 运行在带 URL / TextEncoder 的 JS 引擎里）
   URL,
+  URLSearchParams,
   TextEncoder,
   setTimeout,
   clearTimeout,

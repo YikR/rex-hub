@@ -1,4 +1,5 @@
 import type { HttpLimits } from "../http";
+import type { CacheOptions } from "../cache";
 
 /** 适配器统一输出的条目模型（内部模型，与 Rex 的 VideoItem 解耦）。 */
 export interface CatalogItem {
@@ -29,12 +30,22 @@ export interface AdapterContext {
   limit: number;
   /** 附加请求头（例如自部署服务的 Authorization） */
   headers: Record<string, string>;
+  /** 站内搜索关键词 */
+  keyword?: string;
+  /** 适配器自带的检索条件（archive 等按关键词检索的来源使用） */
+  query?: string;
+  /** 页码，从 1 开始 */
+  page?: number;
+  /** 可选响应缓存 */
+  cache?: CacheOptions;
 }
 
 export interface HubAdapter {
   id: string;
   title: string;
   description: string;
+  /** 是否需要 endpoint；false 表示来源内置检索地址 */
+  requiresEndpoint: boolean;
   /** 列表来源；返回上限由 ctx.limit 控制 */
   list(endpoint: string, ctx: AdapterContext): Promise<CatalogItem[]>;
   /** 站内搜索；缺省表示该适配器不支持搜索 */

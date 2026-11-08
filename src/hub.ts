@@ -4,9 +4,10 @@ import type {
   SubtitleEntry,
 } from "./adapters/types";
 import { collectAcross, type SourceFailure } from "./aggregate";
-import { type HubConfig, readConfig } from "./config";
+import { type EndpointEntry, type HubConfig, readConfig } from "./config";
 import { HubError } from "./errors";
 import { assertAllowedUrl } from "./http";
+import { presetEndpoints } from "./presets";
 import { DEFAULT_SOURCE, getAdapter } from "./registry";
 
 export type HubParams = Record<string, unknown> & {
@@ -22,6 +23,9 @@ export interface ListResult {
   failures: SourceFailure[];
 }
 
+const CACHE_NAMESPACE = "rex-hub";
+const MAX_ENDPOINTS = 8;
+
 function contextOf(config: HubConfig): AdapterContext {
   return {
     limits: {
@@ -31,16 +35,53 @@ function contextOf(config: HubConfig): AdapterContext {
     },
     limit: config.limit,
     headers: config.headers,
+    query: config.query,
+    page: config.page,
+    cache: { ttlSeconds: config.cacheTtl, namespace: CACHE_NAMESPACE },
   };
 }
 
-function requireEndpoints(config: HubConfig): void {
-  if (config.endpoints.length === 0) {
+/**
+ * 把「预设地址 + 用户填写地址」合并成最终来源列表。
+ *
+ * - 预设只在用户没重复填写时生效，避免同一个列表被抓两次。
+ * - 内置检索的来源（archive）允许没有地址：此时用适配器自带的检索。
+ */
+export function resolveEndpoints(
+  config: HubConfig,
+  adapterId: string,
+  requiresEndpoint: boolean
+): EndpointEntry[] {
+  const merged: EndpointEntry[] = [];
+  const seen = new Set<string>();
+
+  const candidates: EndpointEntry[] = [
+    ...presetEndpoints(config.preset).map(url => ({
+      name: new URL(url).hostname,
+      url,
+    })),
+    ...config.endpoints,
+  ];
+
+  for (const entry of candidates) {
+    const key = entry.url === "" ? `builtin:${entry.name}` : entry.url;
+    if (seen.has(key)) {
+      continue;
+    }
+    seen.add(key);
+    merged.push(entry);
+  }
+
+  if (!requiresEndpoint) {
+    return merged.length > 0 ? merged : [{ name: adapterId, url: "" }];
+  }
+  if (merged.length === 0) {
     throw new HubError(
       "MISSING_ENDPOINT",
-      "请先在模块设置中填写至少一个来源地址"
+      "请填写至少一个来源地址，或选择一个内置预设"
     );
   }
+  return merged.slice(0, MAX_ENDPOINTS);
 }
 
 /** 内部模型 → Rex 的 VideoItem。type=url 表示客户端可直接播放该地址。 */
@@ -64,13 +105,15 @@ export function toVideoItems(items: CatalogItem[]): VideoItem[] {
 
 export async function listItems(params?: HubParams): Promise<ListResult> {
   const config = readConfig(params, DEFAULT_SOURCE);
-  requireEndpoints(config);
   const adapter = getAdapter(config.source);
+  const endpoints = resolveEndpoints(
+    config,
+    adapter.id,
+    adapter.requiresEndpoint
+  );
   const ctx = contextOf(config);
-  const { items, failures } = await collectAcross(
-    config.endpoints,
-    ctx,
-    endpoint => adapter.list(endpoint.url, ctx)
+  const { items, failures } = await collectAcross(endpoints, ctx, endpoint =>
+    adapter.list(endpoint.url, ctx)
   );
   return { items: toVideoItems(items), failures };
 }
@@ -79,19 +122,20 @@ export async function searchItems(params?: HubParams): Promise<ListResult> {
   const keyword =
     typeof params?.keyword === "string" ? params.keyword.trim() : "";
   const config = readConfig(params, DEFAULT_SOURCE);
-  requireEndpoints(config);
   const adapter = getAdapter(config.source);
   if (!adapter.search || keyword === "") {
     return { items: [], failures: [] };
   }
-  const ctx = contextOf(config);
-  const { items, failures } = await collectAcross(
-    config.endpoints,
-    ctx,
-    endpoint =>
-      adapter.search
-        ? adapter.search(endpoint.url, keyword, ctx)
-        : Promise.resolve([])
+  const endpoints = resolveEndpoints(
+    config,
+    adapter.id,
+    adapter.requiresEndpoint
+  );
+  const ctx = { ...contextOf(config), keyword };
+  const { items, failures } = await collectAcross(endpoints, ctx, endpoint =>
+    adapter.search
+      ? adapter.search(endpoint.url, keyword, ctx)
+      : Promise.resolve([])
   );
   return { items: toVideoItems(items), failures };
 }
@@ -113,12 +157,11 @@ export function streamSources(params?: HubParams): StreamSourceItem[] {
   return [{ name: "直连", url: url.toString() }];
 }
 
-/** 字幕：仅 JSON 目录协议携带字幕信息，M3U 列表没有字幕。 */
+/** 字幕：仅 JSON 目录协议携带字幕信息，M3U 列表与公共影库没有字幕。 */
 export async function subtitleEntries(
   params?: HubParams
 ): Promise<SubtitleEntry[]> {
   const config = readConfig(params, DEFAULT_SOURCE);
-  requireEndpoints(config);
   const adapter = getAdapter(config.source);
   if (!adapter.search) {
     return [];
@@ -127,8 +170,13 @@ export async function subtitleEntries(
   if (title === "") {
     return [];
   }
+  const endpoints = resolveEndpoints(
+    config,
+    adapter.id,
+    adapter.requiresEndpoint
+  );
   const ctx = contextOf(config);
-  for (const endpoint of config.endpoints) {
+  for (const endpoint of endpoints) {
     try {
       const items = await adapter.search(endpoint.url, title, ctx);
       const matched = items.find(

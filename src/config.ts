@@ -1,5 +1,6 @@
 import { HubError } from "./errors";
 import type { HttpLimits } from "./http";
+import { DEFAULT_PRESET } from "./presets";
 
 /** 模块参数（Rex 会把 globalParams 合并进每次模块调用）。 */
 export type RawParams = Record<string, unknown>;
@@ -9,6 +10,8 @@ export const DEFAULTS = {
   timeoutMs: 8000,
   maxBytes: 4 * 1024 * 1024,
   maxEndpoints: 8,
+  page: 1,
+  cacheTtl: 600,
 } as const;
 
 export interface EndpointEntry {
@@ -20,12 +23,20 @@ export interface EndpointEntry {
 export interface HubConfig extends HttpLimits {
   /** 适配器 id，见 src/registry.ts */
   source: string;
-  /** 已解析的多来源列表 */
+  /** 已解析的多来源列表（已合并预设） */
   endpoints: EndpointEntry[];
   /** 单次列表/搜索结果上限 */
   limit: number;
   /** 附加请求头（自定义 Headers JSON） */
   headers: Record<string, string>;
+  /** 内置来源预设 id */
+  preset: string;
+  /** 适配器自带检索条件（archive 使用） */
+  query: string;
+  /** 页码，从 1 开始 */
+  page: number;
+  /** 响应缓存时长（秒），0 表示关闭 */
+  cacheTtl: number;
 }
 
 const HEADER_NAME = /^[A-Za-z0-9!#$%&'*+.^_`|~-]{1,64}$/;
@@ -169,5 +180,9 @@ export function readConfig(
     ),
     allowPrivateHost,
     headers: parseHeaders(readString(input, "headers")),
+    preset: readString(input, "preset") ?? DEFAULT_PRESET,
+    query: readString(input, "query") ?? "",
+    page: readNumber(input, "page", DEFAULTS.page, 1, 100),
+    cacheTtl: readNumber(input, "cacheTtl", DEFAULTS.cacheTtl, 0, 86_400),
   };
 }
