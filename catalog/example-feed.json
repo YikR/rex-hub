@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "name": "示例目录",
+  "items": [
+    {
+      "id": "demo-movie",
+      "title": "示例影片",
+      "type": "movie",
+      "url": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+      "poster": "https://picsum.photos/seed/demo-movie/300/450",
+      "backdrop": "https://picsum.photos/seed/demo-movie-wide/1280/720",
+      "year": 2024,
+      "group": "电影",
+      "description": "仅用于验证 rex-hub/1 目录协议的最小示例。",
+      "subtitles": [
+        {
+          "title": "简体中文",
+          "lang": "zh",
+          "url": "https://raw.githubusercontent.com/mozilla/vtt.js/master/tests/fixtures/subtitles.vtt"
+        }
+      ]
+    },
+    {
+      "id": "demo-show",
+      "title": "示例剧集",
+      "type": "tv",
+      "url": "https://test-streams.mux.dev/pts_shift/master.m3u8",
+      "group": "剧集",
+      "episodes": [
+        {
+          "title": "第 1 集",
+          "url": "https://test-streams.mux.dev/pts_shift/master.m3u8"
+        },
+        {
+          "title": "第 2 集",
+          "url": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
+        }
+      ]
+    }
+  ]
+}
