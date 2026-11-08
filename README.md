@@ -71,50 +71,43 @@ npm run build        # 产出 dist/index.js
 npm run smoke        # 确认产物能被宿主求值（不联网）
 ```
 
-### 3.2 导入 Rex（三选一）
+### 3.2 导入 Rex
 
-**A. 从 URL 导入（推荐，可复用）**
+> **必须用加密产物 `dist/index.rex.js`**。Rex 客户端导入时只认两种东西：`.rex` 集合清单，
+> 或 REXENC 密文。直接喂明文 `.js`（`dist/index.js`）会提示「添加失败：无法识别的模块数据」。
+> 明文产物保留在仓库里，用于审计与开发。
 
-把 `dist/index.js` 托管到任意 HTTPS 地址（GitHub raw、对象存储、自己的域名都行），然后打开：
-
-```
-https://rexnow.tv/widget?url=<把模块地址 URL 编码后的结果>
-```
-
-例如模块地址是 `https://example.com/rex-hub.js`，编码后为
-`https%3A%2F%2Fexample.com%2Frex-hub.js`，拼成：
+**A. 一键导入（单模块，加密产物）**
 
 ```
-https://rexnow.tv/widget?url=https%3A%2F%2Fexample.com%2Frex-hub.js
+https://rexnow.tv/widget?url=https%3A%2F%2Fraw.githubusercontent.com%2FYikR%2Frex-hub%2Fmain%2Fdist%2Findex.rex.js
 ```
 
-在 Rex 里打开该链接，会提示导入。GitHub raw 地址同样可用：
+**B. 集合清单导入（`.rex`）**
 
-```
-https://rexnow.tv/widget?url=https%3A%2F%2Fraw.githubusercontent.com%2FYikR%2Frex-hub%2Fmain%2Fdist%2Findex.js
-```
-
-> 仓库已经把构建产物 `dist/index.js` 一起提交，因此上面的 raw 链接可以直接用；改代码后请重新
-> `npm run build` 并提交产物（CI 会校验产物与源码是否一致）。
-
-**A2. 用集合清单导入（`.rex`，和生态里常见做法一致）**
-
-仓库根目录的 [`rex-hub.rex`](rex-hub.rex) 是一个集合清单，`widgets[].url` 指向上面的产物：
+仓库根目录的 [`rex-hub.rex`](rex-hub.rex) 指向同一份密文：
 
 ```
 https://rexnow.tv/widget?url=https%3A%2F%2Fraw.githubusercontent.com%2FYikR%2Frex-hub%2Fmain%2Frex-hub.rex
 ```
 
-单模块导入与集合导入等价，任选其一即可；集合清单的好处是以后加了模块能一起下发。
+A、B 等价，任选其一。集合清单的好处是以后加模块可以一起下发。
 
-**B. App 内导入文件**
+**C. App 内导入文件**
 
-把 `dist/index.js` 传到设备（AirDrop / 文件 App），在 Rex 的模块管理里选择导入本地文件。
+把 `dist/index.rex.js` 传到设备（AirDrop / 文件 App），在 Rex 的模块管理里导入本地文件。
 
-**C. 加密产物**
+**D. 自己重新加密**
 
-把 `rslib.config.ts` 里的 `encrypt` 改成 `true` 再构建，得到 REXENC 密文，再按 A/B 导入。
-注意：这会**把源码提交到 rexnow.tv 的加密服务**（第三方），默认关闭。
+```bash
+npm run build     # 产出明文 dist/index.js
+npm run encrypt   # 调官方服务生成 dist/index.rex.js（会把源码发给 rexnow.tv）
+npm run encrypt:check  # 离线校验密文封装是否完整
+```
+
+加密封装是 `REXENC` + JSON 头（`v:2 / mkv:rex-1 / alg:A256GCM`）+ Base64 密文三行，
+校验逻辑与官方加密页、`@rexnow/rslib-plugin` 一致（见 [scripts/encrypt.mjs](scripts/encrypt.mjs)）。
+因为密文不可审计，仓库同时保留明文 `dist/index.js`，CI 会校验它与源码一致。
 
 ### 3.3 装好之后怎么用
 
@@ -196,7 +189,7 @@ src/
    └─ jsonfeed.ts        rex-hub/1 目录解析
 catalog/                 候选登记表与可直接解析的示例（被测试守护）
 docs/                    调研、安全审查、协议、来源说明
-test/                    11 个文件 / 90 个用例（含"客户端静态解析"复刻）
+test/                    11 个文件 / 91 个用例（含"客户端静态解析"与密文封装校验）
 assets/icon.png          模块图标
 rex-hub.rex              集合清单（可选导入入口）
 scripts/smoke.mjs        产物冒烟检查（vm 沙箱，不联网）
@@ -220,8 +213,9 @@ scripts/smoke.mjs        产物冒烟检查（vm 沙箱，不联网）
 format:check  ✓ prettier --check 全部通过
 lint          ✓ eslint 0 error / 0 warning
 check         ✓ tsc --noEmit 无错误
-test          ✓ 11 files / 90 tests passed
-build         ✓ dist/index.js 44.5 kB（gzip 13.1 kB，构建确定性可复现）
+test          ✓ 11 files / 91 tests passed
+build         ✓ dist/index.js 44.5 kB（gzip 13.1 kB）；dist/index.rex.js 78.6 KiB（REXENC）
+encrypt:check ✓ 密文封装有效（iv 12B / kb 60B / 密文 58.8 KiB）
 smoke         ✓ 产物可被宿主求值，全局与函数解析正常
 npm audit     ✓ 0 vulnerabilities（含构建期）
 真实网络验证   ✓ archive 首屏 5 条 / 冷启 3–8s，命中缓存 4ms；iptv-cn 预设 3 条

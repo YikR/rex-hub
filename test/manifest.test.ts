@@ -135,10 +135,27 @@ describe("集合清单 rex-hub.rex", () => {
     expect(manifest.widgets).toHaveLength(1);
     const widget = manifest.widgets[0] as Record<string, string>;
     expect(widget.url).toBe(
-      "https://raw.githubusercontent.com/YikR/rex-hub/main/dist/index.js"
+      "https://raw.githubusercontent.com/YikR/rex-hub/main/dist/index.rex.js"
     );
     expect(widget.id).toBe("rex-hub");
     expect(widget.requiredVersion).toBe("0.0.2");
+  });
+
+  it("加密产物存在且是合法的 REXENC 三行封装", () => {
+    const encrypted = readFileSync(
+      new URL("../dist/index.rex.js", import.meta.url),
+      "utf8"
+    );
+    const lines = encrypted.split("\n");
+    expect(lines).toHaveLength(3);
+    expect(lines[0]).toBe("REXENC");
+    const header = JSON.parse(lines[1] as string);
+    expect(header).toMatchObject({ v: 2, mkv: "rex-1", alg: "A256GCM" });
+    expect(Buffer.from(header.iv, "base64")).toHaveLength(12);
+    expect(Buffer.from(header.kb, "base64")).toHaveLength(60);
+    expect(
+      Buffer.from((lines[2] as string).trim(), "base64").length
+    ).toBeGreaterThan(16);
   });
 
   it("版本与包版本一致", () => {

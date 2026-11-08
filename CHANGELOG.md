@@ -1,5 +1,14 @@
 # 变更记录
 
+## 0.2.2 — 2026-11-08
+
+### 修复
+
+- **导入仍报「无法识别的模块数据」**：Rex 客户端只接受 `.rex` 集合清单或 **REXENC 密文**，
+  明文 `.js` 一律拒绝。新增 `scripts/encrypt.mjs`（调官方加密接口、离线校验封装），
+  产出 `dist/index.rex.js`，并把 `rex-hub.rex` 指向它。
+- `rslib` 增加 `cleanDistPath: false`，构建不再清掉加密产物；`verify` 增加 `encrypt:check`。
+
 ## 0.2.1 — 2026-11-08
 
 ### 修复

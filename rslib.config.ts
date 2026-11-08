@@ -22,6 +22,8 @@ export default defineConfig({
     autoExternal: false,
     minify: false,
     sourceMap: false,
+    // 不要清空 dist：dist/index.rex.js（加密产物）不是 rslib 生成的，需要保留
+    cleanDistPath: false,
   },
   plugins: [pluginRexWidget({ encrypt: false })],
 });

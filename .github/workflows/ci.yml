@@ -38,5 +38,7 @@ jobs:
         run: git diff --exit-code -- dist
       - name: Smoke test artifact
         run: npm run smoke
+      - name: Validate encrypted envelope (offline)
+        run: npm run encrypt:check
       - name: Audit runtime dependencies
         run: npm audit --omit=dev

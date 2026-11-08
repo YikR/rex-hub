@@ -3,7 +3,7 @@ import { DEFAULT_PRESET, presetOptions } from "./presets";
 import { DEFAULT_SOURCE, sourceOptions } from "./registry";
 
 /** 与 package.json 的 version 保持一致（有单测守护）。 */
-export const HUB_VERSION = "0.2.1";
+export const HUB_VERSION = "0.2.2";
 export const HUB_ID = "rex-hub";
 export const HUB_ICON =
   "https://raw.githubusercontent.com/YikR/rex-hub/main/assets/icon.png";

@@ -1111,7 +1111,7 @@ function toSubtitleItems(entries) {
     title: "Rex Hub 多源聚合",
     description: "把公共影库、公开频道与自部署媒体来源合并成一个可切换、可配置的模块。",
     author: "YikR",
-    version: "0.2.1",
+    version: "0.2.2",
     requiredVersion: "0.0.2",
     icon: "https://raw.githubusercontent.com/YikR/rex-hub/main/assets/icon.png",
     globalParams: [
