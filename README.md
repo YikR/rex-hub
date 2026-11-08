@@ -97,6 +97,16 @@ https://rexnow.tv/widget?url=https%3A%2F%2Fraw.githubusercontent.com%2FYikR%2Fre
 > 仓库已经把构建产物 `dist/index.js` 一起提交，因此上面的 raw 链接可以直接用；改代码后请重新
 > `npm run build` 并提交产物（CI 会校验产物与源码是否一致）。
 
+**A2. 用集合清单导入（`.rex`，和生态里常见做法一致）**
+
+仓库根目录的 [`rex-hub.rex`](rex-hub.rex) 是一个集合清单，`widgets[].url` 指向上面的产物：
+
+```
+https://rexnow.tv/widget?url=https%3A%2F%2Fraw.githubusercontent.com%2FYikR%2Frex-hub%2Fmain%2Frex-hub.rex
+```
+
+单模块导入与集合导入等价，任选其一即可；集合清单的好处是以后加了模块能一起下发。
+
 **B. App 内导入文件**
 
 把 `dist/index.js` 传到设备（AirDrop / 文件 App），在 Rex 的模块管理里选择导入本地文件。
@@ -186,7 +196,9 @@ src/
    └─ jsonfeed.ts        rex-hub/1 目录解析
 catalog/                 候选登记表与可直接解析的示例（被测试守护）
 docs/                    调研、安全审查、协议、来源说明
-test/                    10 个文件 / 83 个用例
+test/                    11 个文件 / 90 个用例（含"客户端静态解析"复刻）
+assets/icon.png          模块图标
+rex-hub.rex              集合清单（可选导入入口）
 scripts/smoke.mjs        产物冒烟检查（vm 沙箱，不联网）
 ```
 
@@ -208,8 +220,8 @@ scripts/smoke.mjs        产物冒烟检查（vm 沙箱，不联网）
 format:check  ✓ prettier --check 全部通过
 lint          ✓ eslint 0 error / 0 warning
 check         ✓ tsc --noEmit 无错误
-test          ✓ 10 files / 83 tests passed
-build         ✓ dist/index.js 43.8 kB（gzip 12.9 kB，构建确定性可复现）
+test          ✓ 11 files / 90 tests passed
+build         ✓ dist/index.js 44.5 kB（gzip 13.1 kB，构建确定性可复现）
 smoke         ✓ 产物可被宿主求值，全局与函数解析正常
 npm audit     ✓ 0 vulnerabilities（含构建期）
 真实网络验证   ✓ archive 首屏 5 条 / 冷启 3–8s，命中缓存 4ms；iptv-cn 预设 3 条
